@@ -12,15 +12,23 @@ import PosterFallback from "../../assets/no-poster.png";
 import CircleRating from "../circleRating/CircleRating";
 import "./style.scss";
 import Img from "../lazyLoadImage/img";
+import Genres from "../genres/Genres";
 
 
-const Carousel = ({data, loading}) => {
+const Carousel = ({data, loading, endpoint}) => {
 
     const carouselContainer = useRef();
     const {url} = useSelector((state) => state.home);
     const navigate = useNavigate();
-    const navigation = (dir) => {
 
+    const navigation = (dir) => {
+        const container = carouselContainer.current
+        const scrollAmount = dir === "left" ? container.scrollLeft - (container.offsetWidth + 20) : container.scrollLeft + (container.offsetWidth + 20)
+
+        container.scrollTo({
+            left: scrollAmount,
+            behavior: "smooth",
+        })
     }
 
     const skItem = () => {
@@ -41,16 +49,17 @@ const Carousel = ({data, loading}) => {
             <BsFillArrowLeftCircleFill className="carouselLeftNav arrow" onClick={() => navigation("left")}/>
             <BsFillArrowRightCircleFill className="carouselRighttNav arrow" onClick={() => navigation("rightt")}/>
             {!loading ? (
-                <div className="carouselItems">
+                <div ref={carouselContainer} className="carouselItems">
                     {data?.map((item) => {
                         const posterUrl = item.poster_path
                         ? url.poster + item.poster_path
                         : PosterFallback;
                         return (
-                            <div key={item.id}  className="carouselItem">
+                            <div key={item.id}  className="carouselItem" onClick={() => navigate(`/${item.media_type || endpoint}/${item.id}`)}>
                                 <div className="posterBlock">
                                     <Img src={posterUrl} />
                                     <CircleRating rating={item.vote_average.toFixed(1)} />
+                                    <Genres data={item.genre_ids.slice(0,2)} />
                                 </div>
                                 <div className="textBlock">
                                     <span className="title">
